@@ -114,7 +114,7 @@ internal static class Compiler
             if (publishResult != 0)
                 return publishResult;
 
-            var executableName = OperatingSystem.IsWindows() ? "NativeInput.exe" : "NativeInput";
+            var executableName = target.RuntimeIdentifier.StartsWith("win-", StringComparison.OrdinalIgnoreCase) ? "NativeInput.exe" : "NativeInput";
             var executable = Path.Combine(publish, executableName);
             if (!File.Exists(executable))
             {
