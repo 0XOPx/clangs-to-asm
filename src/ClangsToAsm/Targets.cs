@@ -19,3 +19,10 @@ internal sealed record Target(string Name, string ClangTriple, string? RuntimeId
     public static Target? Find(string name) =>
         All.FirstOrDefault(target => string.Equals(target.Name, name, StringComparison.OrdinalIgnoreCase));
 }
+
+internal static class Targets
+{
+    public static IReadOnlyList<Target> All => Target.All;
+
+    public static Target? Find(string name) => Target.Find(name);
+}
