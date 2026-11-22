@@ -19,7 +19,7 @@ Clang can emit assembly without linking. Cross-target headers, libraries, sysroo
 ## Build
 
 ```powershell
-dotnet build -c Release
+dotnet build src/ClangsToAsm/ClangsToAsm.csproj -c Release
 ```
 
 ## Usage
