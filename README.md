@@ -92,6 +92,17 @@ C# currently maps to NativeAOT runtime identifiers for `win-x64`, `linux-x64`, `
 
 Each output is named `<input-name>.<target>.asm`. C/C++ output is assembly emitted directly by Clang. C# output is a disassembly of the NativeAOT-produced native executable.
 
+## GitHub Releases
+
+Push a version tag to build Windows x64, Linux x64, macOS x64, and macOS ARM64 binaries and publish them as release assets:
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The workflow also supports manual runs from the Actions tab. Manual runs create downloadable workflow artifacts; pushing a version tag creates a GitHub Release automatically.
+
 ## Exit codes
 
 - `0`: all requested compilations succeeded.
