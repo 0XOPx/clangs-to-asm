@@ -1,0 +1,89 @@
+name: Upload Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Release tag, for example v1.0.0
+        required: true
+        type: string
+      release_name:
+        description: Release title
+        required: true
+        type: string
+      prerelease:
+        description: Mark this release as a prerelease
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.rid }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            rid: win-x64
+            archive: zip
+          - runner: ubuntu-latest
+            rid: linux-x64
+            archive: tar.gz
+          - runner: macos-15-intel
+            rid: osx-x64
+            archive: tar.gz
+          - runner: macos-15
+            rid: osx-arm64
+            archive: tar.gz
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish
+        run: dotnet publish src/ClangsToAsm/ClangsToAsm.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+
+      - name: Package Windows
+        if: matrix.archive == 'zip'
+        shell: pwsh
+        run: Compress-Archive -Path publish/* -DestinationPath ClangsToAsm-${{ matrix.rid }}.zip
+
+      - name: Package Unix
+        if: matrix.archive == 'tar.gz'
+        run: tar -czf ClangsToAsm-${{ matrix.rid }}.tar.gz -C publish .
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClangsToAsm-${{ matrix.rid }}
+          path: ClangsToAsm-${{ matrix.rid }}.*
+
+  release:
+    name: Create New GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create release and upload files
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: ${{ inputs.release_name }}
+          target_commitish: ${{ github.sha }}
+          files: release-assets/*
+          generate_release_notes: true
+          prerelease: ${{ inputs.prerelease }}
