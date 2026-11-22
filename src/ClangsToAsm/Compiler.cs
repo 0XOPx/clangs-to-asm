@@ -23,7 +23,7 @@ internal static class Compiler
         }
 
         var targets = options.AllTargets
-            ? Targets.All
+            ? (extension == ".cs" ? Targets.All.Where(target => target.RuntimeIdentifier is not null).ToArray() : Targets.All)
             : new[] { options.TargetName is null ? GetHostTarget() : Targets.Find(options.TargetName)! };
 
         Directory.CreateDirectory(options.OutputDirectory);
